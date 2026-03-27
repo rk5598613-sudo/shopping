@@ -56,23 +56,26 @@
         </section>
     </main>
 
-    <!-- Address Details Popup -->
+    <!-- ✅ FIXED POPUP FORM -->
     <div id="popup" class="overlay">
         <div class="content">
             <div class="header"><h2>Delivery Address</h2></div>
-            <form id="form">
+
+            <!-- 🔥 IMPORTANT CHANGE HERE -->
+            <form method="POST" action="{{ url_for('checkout') }}" onsubmit="return validate()">
+                
                 <div class="group">
-                    <label for="city">City</label>
+                    <label>City</label>
                     <input type="text" id="city" name="city" required placeholder="Enter your city">
                     <div class="error" id="cityError">Please enter a valid city name</div>
                 </div>
                 <div class="group">
-                    <label for="phone">Phone Number</label>
+                    <label>Phone Number</label>
                     <input type="tel" id="phone" name="phone" required placeholder="Enter your phone number">
                     <div class="error" id="phoneError">Please enter a valid phone number</div>
                 </div>
                 <div class="group">
-                    <label for="email">Email Address</label>
+                    <label>Email Address</label>
                     <input type="email" id="email" name="email" required placeholder="Enter your email address">
                     <div class="error" id="emailError">Please enter a valid email address</div>
                 </div>
@@ -89,29 +92,53 @@
         .content{background:white;padding:30px;border-radius:10px;width:90%;max-width:500px;box-shadow:0 10px 30px rgba(0,0,0,.3);animation:fade 0.3s ease-out}
         @keyframes fade{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}
         .header{text-align:center;margin-bottom:25px}
-        .header h2{color:#333;margin:0;font-size:24px}
         .group{margin-bottom:20px}
-        .group label{display:block;margin-bottom:5px;font-weight:bold;color:#555}
-        .group input{width:100%;padding:12px;border:2px solid #ddd;border-radius:5px;font-size:16px;transition:border-color 0.3s}
-        .group input:focus{outline:none;border-color:#667eea}
+        .group input{width:100%;padding:12px;border:2px solid #ddd;border-radius:5px}
         .buttons{display:flex;gap:15px;margin-top:25px}
-        .btn{flex:1;padding:12px;border:none;border-radius:5px;font-size:16px;font-weight:bold;cursor:pointer;transition:background-color 0.3s}
+        .btn{flex:1;padding:12px;border:none;border-radius:5px;cursor:pointer}
         .btn-confirm{background:#667eea;color:white}
-        .btn-confirm:hover{background:#5a67d8}
-        .btn-cancel{background:#e2e8f0;color:#4a5568}
-        .btn-cancel:hover{background:#cbd5e0}
-        .error{color:#e53e3e;font-size:14px;margin-top:5px;display:none}
+        .btn-cancel{background:#e2e8f0}
+        .error{color:red;font-size:14px;display:none}
     </style>
 
     <script>
-        function openPopup(){document.getElementById('popup').style.display='flex';document.body.style.overflow='hidden'}
-        function closePopup(){document.getElementById('popup').style.display='none';document.body.style.overflow='auto';document.getElementById('form').reset();document.querySelectorAll('.error').forEach(e=>e.style.display='none')}
-        function validate(){let v=true;const c=document.getElementById('city').value.trim();if(c.length<2){document.getElementById('cityError').style.display='block';v=false}else{document.getElementById('cityError').style.display='none'}
-        const p=document.getElementById('phone').value.trim();if(!/^[6-9]\d{9}$/.test(p)){document.getElementById('phoneError').style.display='block';v=false}else{document.getElementById('phoneError').style.display='none'}
-        const e=document.getElementById('email').value.trim();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){document.getElementById('emailError').style.display='block';v=false}else{document.getElementById('emailError').style.display='none'}return v}
-        document.getElementById('form').addEventListener('submit',function(e){e.preventDefault();if(validate()){const d=new FormData();d.append('city',document.getElementById('city').value.trim());d.append('phone',document.getElementById('phone').value.trim());d.append('email',document.getElementById('email').value.trim());fetch('{{ url_for("checkout") }}',{method:'POST',body:d}).then(r=>{if(r.ok){closePopup();window.location.href=r.url}else{alert('Error processing order. Please try again.')}}).catch(err=>{console.error(err);alert('Error processing order. Please try again.')})}})
-        document.getElementById('popup').addEventListener('click',function(e){if(e.target===this)closePopup()})
-        document.addEventListener('keydown',function(e){if(e.key==='Escape'&&document.getElementById('popup').style.display==='flex')closePopup()})
+        function openPopup(){
+            document.getElementById('popup').style.display='flex';
+        }
+
+        function closePopup(){
+            document.getElementById('popup').style.display='none';
+        }
+
+        function validate(){
+            let valid = true;
+
+            const city = document.getElementById('city').value.trim();
+            if(city.length < 2){
+                document.getElementById('cityError').style.display='block';
+                valid = false;
+            } else {
+                document.getElementById('cityError').style.display='none';
+            }
+
+            const phone = document.getElementById('phone').value.trim();
+            if(!/^[6-9]\d{9}$/.test(phone)){
+                document.getElementById('phoneError').style.display='block';
+                valid = false;
+            } else {
+                document.getElementById('phoneError').style.display='none';
+            }
+
+            const email = document.getElementById('email').value.trim();
+            if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+                document.getElementById('emailError').style.display='block';
+                valid = false;
+            } else {
+                document.getElementById('emailError').style.display='none';
+            }
+
+            return valid;
+        }
     </script>
 </body>
 </html>
