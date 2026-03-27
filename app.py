@@ -8,7 +8,7 @@ app = Flask(__name__)
 app.secret_key = 'knr_stylo_hub_secret_key_2026'
 
 # Database setup
-DATABASE = 'users.db'
+DATABASE = os.path.join(os.path.dirname(__file__), 'users.db')  # Absolute path for Render
 
 def get_db():
     conn = sqlite3.connect(DATABASE)
@@ -173,6 +173,8 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
+# Run app with dynamic PORT for Render deployment
 if __name__ == '__main__':
     init_db()
-    app.run(debug=True, port=5000)
+    PORT = int(os.environ.get("PORT", 5000))
+    app.run(debug=True, host="0.0.0.0", port=PORT)
