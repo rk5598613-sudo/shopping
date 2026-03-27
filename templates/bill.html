@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bill Receipt - Stylo Hub</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <h1 class="logo">Stylo Hub</h1>
+            <div class="nav-links">
+                <span class="user-name">Welcome, {{ session.username }}!</span>
+                <a href="{{ url_for('shop') }}" class="cart-btn">← Back to Shop</a>
+                <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="bill-section">
+            <div class="bill-card">
+                <div class="bill-header">Stylo Hub</div>
+                <div class="bill-divider">--- Bill Receipt ---</div>
+                
+                <div class="delivery-address">
+                    <h3>Delivery Address</h3>
+                    <p><strong>City:</strong> {{ city }}</p>
+                    <p><strong>Phone:</strong> {{ phone }}</p>
+                    <p><strong>Email:</strong> {{ email }}</p>
+                </div>
+                
+                <div class="bill-items">
+                    {% for item in cart %}
+                    <div class="bill-item">
+                        <span>{{ item.name }} x{{ item.quantity }}</span>
+                        <span>₹{{ item.price * item.quantity }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="bill-divider">---</div>
+                
+                <div class="bill-total">
+                    <strong>Total Amount: ₹{{ total }}</strong>
+                </div>
+                
+                <div class="success-message">
+                    ✓ Order placed successfully!
+                </div>
+                
+                <div class="bill-actions">
+                    <a href="{{ url_for('shop') }}" class="btn-primary">Continue Shopping</a>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

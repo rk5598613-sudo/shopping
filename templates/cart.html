@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart - Stylo Hub</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <h1 class="logo">Stylo Hub</h1>
+            <div class="nav-links">
+                <span class="user-name">Welcome, {{ session.username }}!</span>
+                <a href="{{ url_for('shop') }}" class="cart-btn">← Continue Shopping</a>
+                <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="cart-section">
+            <h2>Shopping Cart</h2>
+            
+            {% if cart %}
+                <div class="cart-items">
+                    {% for item in cart %}
+                    <div class="cart-item">
+                        <div class="item-image">
+                            <img src="{{ url_for('static', filename=item.image) }}" alt="{{ item.name }}">
+                        </div>
+                        <div class="item-details">
+                            <div class="item-name">{{ item.name }} (x{{ item.quantity }})</div>
+                            <div class="item-price">₹{{ item.price * item.quantity }}</div>
+                        </div>
+                        <form method="POST" action="{{ url_for('remove_from_cart') }}" class="remove-form">
+                            <input type="hidden" name="product_id" value="{{ item.id }}">
+                            <button type="submit" class="remove-btn">Remove</button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="cart-footer">
+                    <div class="cart-total">
+                        <strong>Total: ₹{{ total }}</strong>
+                    </div>
+                    <button type="button" class="checkout-btn" onclick="openPopup()">Proceed to Checkout</button>
+                </div>
+            {% else %}
+                <div class="cart-empty">
+                    <p>Your cart is empty</p>
+                    <a href="{{ url_for('shop') }}" class="continue-shopping-btn">Continue Shopping</a>
+                </div>
+            {% endif %}
+        </section>
+    </main>
+
+    <!-- Address Details Popup -->
+    <div id="popup" class="overlay">
+        <div class="content">
+            <div class="header"><h2>Delivery Address</h2></div>
+            <form id="form">
+                <div class="group">
+                    <label for="city">City</label>
+                    <input type="text" id="city" name="city" required placeholder="Enter your city">
+                    <div class="error" id="cityError">Please enter a valid city name</div>
+                </div>
+                <div class="group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" required placeholder="Enter your phone number">
+                    <div class="error" id="phoneError">Please enter a valid phone number</div>
+                </div>
+                <div class="group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required placeholder="Enter your email address">
+                    <div class="error" id="emailError">Please enter a valid email address</div>
+                </div>
+                <div class="buttons">
+                    <button type="button" class="btn btn-cancel" onclick="closePopup()">Cancel</button>
+                    <button type="submit" class="btn btn-confirm">Confirm Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <style>
+        .overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);display:none;justify-content:center;align-items:center;z-index:1000}
+        .content{background:white;padding:30px;border-radius:10px;width:90%;max-width:500px;box-shadow:0 10px 30px rgba(0,0,0,.3);animation:fade 0.3s ease-out}
+        @keyframes fade{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}
+        .header{text-align:center;margin-bottom:25px}
+        .header h2{color:#333;margin:0;font-size:24px}
+        .group{margin-bottom:20px}
+        .group label{display:block;margin-bottom:5px;font-weight:bold;color:#555}
+        .group input{width:100%;padding:12px;border:2px solid #ddd;border-radius:5px;font-size:16px;transition:border-color 0.3s}
+        .group input:focus{outline:none;border-color:#667eea}
+        .buttons{display:flex;gap:15px;margin-top:25px}
+        .btn{flex:1;padding:12px;border:none;border-radius:5px;font-size:16px;font-weight:bold;cursor:pointer;transition:background-color 0.3s}
+        .btn-confirm{background:#667eea;color:white}
+        .btn-confirm:hover{background:#5a67d8}
+        .btn-cancel{background:#e2e8f0;color:#4a5568}
+        .btn-cancel:hover{background:#cbd5e0}
+        .error{color:#e53e3e;font-size:14px;margin-top:5px;display:none}
+    </style>
+
+    <script>
+        function openPopup(){document.getElementById('popup').style.display='flex';document.body.style.overflow='hidden'}
+        function closePopup(){document.getElementById('popup').style.display='none';document.body.style.overflow='auto';document.getElementById('form').reset();document.querySelectorAll('.error').forEach(e=>e.style.display='none')}
+        function validate(){let v=true;const c=document.getElementById('city').value.trim();if(c.length<2){document.getElementById('cityError').style.display='block';v=false}else{document.getElementById('cityError').style.display='none'}
+        const p=document.getElementById('phone').value.trim();if(!/^[6-9]\d{9}$/.test(p)){document.getElementById('phoneError').style.display='block';v=false}else{document.getElementById('phoneError').style.display='none'}
+        const e=document.getElementById('email').value.trim();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){document.getElementById('emailError').style.display='block';v=false}else{document.getElementById('emailError').style.display='none'}return v}
+        document.getElementById('form').addEventListener('submit',function(e){e.preventDefault();if(validate()){const d=new FormData();d.append('city',document.getElementById('city').value.trim());d.append('phone',document.getElementById('phone').value.trim());d.append('email',document.getElementById('email').value.trim());fetch('{{ url_for("checkout") }}',{method:'POST',body:d}).then(r=>{if(r.ok){closePopup();window.location.href=r.url}else{alert('Error processing order. Please try again.')}}).catch(err=>{console.error(err);alert('Error processing order. Please try again.')})}})
+        document.getElementById('popup').addEventListener('click',function(e){if(e.target===this)closePopup()})
+        document.addEventListener('keydown',function(e){if(e.key==='Escape'&&document.getElementById('popup').style.display==='flex')closePopup()})
+    </script>
+</body>
+</html>
