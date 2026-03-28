@@ -2,13 +2,12 @@ from flask import Flask, render_template, request, session, redirect, url_for
 import sqlite3
 import os
 from functools import wraps
-from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = 'knr_stylo_hub_secret_key_2026'
 
 # Database setup
-DATABASE = os.path.join(os.path.dirname(__file__), 'users.db')  # Absolute path for Render
+DATABASE = os.path.join(os.path.dirname(__file__), 'users.db')
 
 def get_db():
     conn = sqlite3.connect(DATABASE)
@@ -25,10 +24,10 @@ def init_db():
     conn.commit()
     conn.close()
 
-# ✅ IMPORTANT FIX (for Render)
+# ✅ IMPORTANT: Initialize DB for Render
 init_db()
 
-# Products catalog
+# Products
 PRODUCTS = {
     "1": {"name": "Shirt", "price": 500, "emoji": "👕", "image": "shirt.jpg"},
     "2": {"name": "Shoes", "price": 1200, "emoji": "👞", "image": "ryan.jpg"},
@@ -36,7 +35,7 @@ PRODUCTS = {
     "4": {"name": "Bag", "price": 700, "emoji": "👜", "image": "Bag.avif"}
 }
 
-# Login required decorator
+# Login check
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -48,8 +47,6 @@ def login_required(f):
 # Routes
 @app.route('/')
 def index():
-    if 'username' in session:
-        return redirect(url_for('shop'))
     return redirect(url_for('login'))
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -153,7 +150,7 @@ def checkout():
     cart = session['cart']
     total = sum(item['price'] * item['quantity'] for item in cart)
     
-    items_str = ', '.join([f"{item['name']} x{item['quantity']} - ₹{item['price'] * item['quantity']}" for item in cart])
+    items_str = ', '.join([f"{item['name']} x{item['quantity']}" for item in cart])
     username = session['username']
     
     conn = get_db()
@@ -173,7 +170,6 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
-# Local run only (Render ignores this)
+# Local run only
 if __name__ == '__main__':
-    PORT = int(os.environ.get("PORT", 5000))
-    app.run(debug=True, host="0.0.0.0", port=PORT)
+    app.run(debug=True)
