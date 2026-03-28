@@ -25,6 +25,9 @@ def init_db():
     conn.commit()
     conn.close()
 
+# ✅ IMPORTANT FIX (for Render)
+init_db()
+
 # Products catalog
 PRODUCTS = {
     "1": {"name": "Shirt", "price": 500, "emoji": "👕", "image": "shirt.jpg"},
@@ -103,7 +106,6 @@ def add_to_cart():
     if 'cart' not in session:
         session['cart'] = []
     
-    # Check if item already in cart
     cart_item = next((item for item in session['cart'] if item['id'] == product_id), None)
     
     if cart_item:
@@ -151,7 +153,6 @@ def checkout():
     cart = session['cart']
     total = sum(item['price'] * item['quantity'] for item in cart)
     
-    # Save order to database
     items_str = ', '.join([f"{item['name']} x{item['quantity']} - ₹{item['price'] * item['quantity']}" for item in cart])
     username = session['username']
     
@@ -162,7 +163,6 @@ def checkout():
     conn.commit()
     conn.close()
     
-    # Clear cart
     session['cart'] = []
     session.modified = True
     
@@ -173,8 +173,7 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
-# Run app with dynamic PORT for Render deployment
+# Local run only (Render ignores this)
 if __name__ == '__main__':
-    init_db()
     PORT = int(os.environ.get("PORT", 5000))
     app.run(debug=True, host="0.0.0.0", port=PORT)
